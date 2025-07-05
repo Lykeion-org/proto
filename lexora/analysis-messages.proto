@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+import "shared/language-types.proto";
+
+package lexora;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/lexora;lexora";
+
+message AnalyzeTextAndAddToSuggestionsRequest {
+    string test = 1;
+    string uid = 2;
+}
+
+message AnalyzeTextAndAddToSuggestionsResponse {
+    string job_uid = 1;
+    string user_uid = 2;
+}
+
+message ApproveSuggestionRequest {
+    string word_suggestion_uid = 1;
+    string approver_uid = 2;
+}
+
+message ApproveSuggestionResponse {
+    Word word = 1;
+    bool sucess = 2;
+}

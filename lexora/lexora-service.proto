@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+import "shared/language-types.proto";
+import "lexora/dictionary-messages.proto";
+import "lexora/analysis-messages.proto";
+import "lexora/lexora-messages.proto";
+
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/lexora;lexora";
+
+package lexora;
+
+service LexoraService {
+//*ENUM Definitions
+    rpc GetLanguageDefinitions(GetLanguageDefinitionsRequest) returns (GetLanguageResponse);
+    rpc GetSymbolDefinitions(GetSymbolDefinitionsRequest) returns (GetSymbolDefinitionsResponse);
+    rpc GetWordAttributeDefinitions(GetWordAttributeDefinitionsRequest) returns (GetWordAttributeDefinitionsResponse);
+
+//*Dictionary CRUD operations (these are to be forwarded to the dictionary service)
+    //READ
+    rpc GetReferent(GetReferentRequest) returns (Referent);
+    rpc GetSymbol(GetSymbolRequest) returns (Symbol);
+    rpc GetWord(GetWordRequest) returns (Word);
+    rpc ListReferents(ListReferentsRequest) returns (ListReferentsResponse);
+    rpc FindReferents(FindReferentsRequest) returns (FindReferentsResponse);
+
+    //CREATE
+    rpc CreateReferent(CreateReferentRequest) returns (Referent);
+    rpc CreateSymbol(CreateSymbolRequest) returns (Symbol);
+    rpc CreateWord(CreateWordRequest) returns (Word);
+    rpc CreateWordAttributes(CreateWordAttributesRequest) returns (WordAttributes);
+
+    //UPDATE
+    rpc UpdateReferent(UpdateReferentRequest) returns (Referent);
+    rpc UpdateSymbol(UpdateSymbolRequest) returns (Symbol);
+    rpc UpdateWord(UpdateWordRequest) returns (Word);
+    rpc UpdateWordAttributes(UpdateWordAttributesRequest) returns (WordAttributes);
+
+    //DELETE
+    rpc DeleteReferent(DeleteReferentRequest) returns (Referent);
+    rpc DeleteSymbol(DeleteSymbolRequest) returns (Symbol);
+    rpc DeleteWord(DeleteWordRequest) returns (Word);
+    rpc DeleteWordAttributes(DeleteWordAttributesRequest) returns (WordAttributes);
+
+    //LINKING OPERATIONS
+    rpc LinkSymbolToReferent(LinkSymbolToReferentRequest) returns (LinkSymbolToReferentResponse);
+    rpc LinkWordToSymbol(LinkWordToSymbolRequest) returns (LinkWordToSymbolResponse);
+    rpc SetSymbolLemma(SetSymbolLemmaRequest) returns (SetSymbolLemmaResponse);
+    rpc UnlinkSymbolFromReferent(UnlinkSymbolFromReferentRequest) returns (UnlinkSymbolFromReferentResponse);
+    rpc UnlinkWordFromSymbol(UnlinkWordFromSymbolRequest) returns (UnlinkWordFromSymbolResponse);
+    rpc ListAllLinkedReferents(ListAllLinkedReferentsRequest) returns (ListAllLinkedReferentsResponse);
+    rpc ListAllLinkedSymbols(ListAllLinkedSymbolsRequest) returns (ListAllLinkedSymbolsResponse);
+
+    //WORD SUGGESTIONS
+    rpc CreateWordSuggestion(CreateWordSuggestionRequest) returns (WordSuggestion);
+    rpc ListAllWordSuggestion(ListAllWordSuggestionRequest) returns (ListAllWordSuggestionResponse);
+    rpc UpdateWordSuggestion(UpdateWordSuggestionRequest) returns (WordSuggestion);
+    rpc DeleteWordSuggestion(DeleteWordSuggestionRequest) returns (WordSuggestion);
+
+//*NLP OPERATIONS
+    rpc AnalyzeTextAndAddToSuggestions(AnalyzeTextAndAddToSuggestionsRequest) returns (AnalyzeTextAndAddToSuggestionsResponse);
+    rpc ApproveSuggestion(ApproveSuggestionRequest) returns (ApproveSuggestionResponse);
+}
+
+

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "demes/user-messages.proto";
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/demes;demes";
+
+package demes;
+
+service DemesService{
+    rpc CreateUser(CreateUserRequest) returns (User);
+    rpc ReadUser(UserUidRequest) returns (User);
+    rpc ReadUserByEmailAddress(UserMailRequest) returns (User);
+    rpc UpdateUser(User) returns (User);
+    rpc DeleteUser(UserUidRequest) returns (User);
+    rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+    rpc ValidatePassword(ValidatePasswordRequest) returns (ValidatePasswordResponse);
+}

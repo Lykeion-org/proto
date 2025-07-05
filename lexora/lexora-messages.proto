@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/lexora;lexora";
+
+message GetLanguageDefinitionsRequest{
+
+}
+message GetLanguageResponse{
+    repeated string languages = 1;
+}
+message GetSymbolDefinitionsRequest{}
+message GetSymbolDefinitionsResponse{
+    repeated string symbol_types = 1;
+}
+message GetWordAttributeDefinitionsRequest{}
+message GetWordAttributeDefinitionsResponse{
+    repeated string gender = 1;
+    repeated string number = 2;
+    repeated string case = 3;
+    repeated string mood  = 4;
+    repeated string tense = 5;
+    repeated string aspect = 6;
+    repeated string person = 7;
+}

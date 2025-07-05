@@ -1,0 +1,128 @@
+syntax="proto3";
+
+import "shared/language-types.proto";
+import "lexora/dictionary-messages.proto";
+
+package kosmos;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/kosmos;kosmos";
+
+service KosmosService {
+//*user and authentication interactions
+    rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse);
+    rpc LoginUser(LoginUserRequest) returns (LoginUserResponse);
+    rpc GetUserClaims(RequestToken) returns (GetUserClaimsResponse);
+    rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResonse);
+	rpc RequestPasswordReset(RequestToken) returns (void) ;
+	rpc RequestEmailVerification(RequestToken) returns (void);
+	rpc ConfirmPasswordReset(ConfirmPasswordResetRequest) returns (void) ;
+	rpc ConfirmEmailVerification(RequestToken) returns (void);
+    // rpc UpdateUser(UpdateUserRequest) returns (void);
+
+//*language interactions
+    rpc GetEnumDefinitions(GetEnumDefinitionsRequest) returns (GetEnumDefinitionsResponse);
+    rpc GetReferent(lexora.GetReferentRequest) returns (lexora.Referent);
+    rpc GetSymbol(lexora.GetSymbolRequest) returns (lexora.Symbol);
+    rpc GetWord(lexora.GetWordRequest) returns (lexora.Word);
+    rpc ListReferents(lexora.ListReferentsRequest) returns (lexora.ListReferentsResponse);
+    rpc FindReferents(lexora.FindReferentsRequest) returns (lexora.FindReferentsResponse);
+
+//admin crud operations
+    //CREATE
+    rpc CreateReferent(lexora.CreateReferentRequest) returns (lexora.Referent);
+    rpc CreateSymbol(lexora.CreateSymbolRequest) returns (lexora.Symbol);
+    rpc CreateWord(lexora.CreateWordRequest) returns (lexora.Word);
+    rpc CreateWordAttributes(lexora.CreateWordAttributesRequest) returns (lexora.WordAttributes);
+
+    //UPDATE
+    rpc UpdateReferent(lexora.UpdateReferentRequest) returns (lexora.Referent);
+    rpc UpdateSymbol(lexora.UpdateSymbolRequest) returns (lexora.Symbol);
+    rpc UpdateWord(lexora.UpdateWordRequest) returns (lexora.Word);
+    rpc UpdateWordAttributes(lexora.UpdateWordAttributesRequest) returns (lexora.WordAttributes);
+
+    //DELETE
+    rpc DeleteReferent(lexora.DeleteReferentRequest) returns (lexora.Referent);
+    rpc DeleteSymbol(lexora.DeleteSymbolRequest) returns (lexora.Symbol);
+    rpc DeleteWord(lexora.DeleteWordRequest) returns (lexora.Word);
+    rpc DeleteWordAttributes(lexora.DeleteWordAttributesRequest) returns (lexora.WordAttributes);
+
+    //LINKING OPERATIONS
+    rpc LinkSymbolToReferent(lexora.LinkSymbolToReferentRequest) returns (lexora.LinkSymbolToReferentResponse);
+    rpc LinkWordToSymbol(lexora.LinkWordToSymbolRequest) returns (lexora.LinkWordToSymbolResponse);
+    rpc SetSymbolLemma(lexora.SetSymbolLemmaRequest) returns (lexora.SetSymbolLemmaResponse); 
+    rpc UnlinkSymbolFromReferent(lexora.UnlinkSymbolFromReferentRequest) returns (lexora.UnlinkSymbolFromReferentResponse);
+    rpc UnlinkWordFromSymbol(lexora.UnlinkWordFromSymbolRequest) returns (lexora.UnlinkWordFromSymbolResponse);
+    rpc ListAllLinkedReferents(lexora.ListAllLinkedReferentsRequest) returns (lexora.ListAllLinkedReferentsResponse);
+    rpc ListAllLinkedSymbols(lexora.ListAllLinkedSymbolsRequest) returns (lexora.ListAllLinkedSymbolsResponse);
+
+
+    //learning interactions
+
+}
+
+message void {}
+
+
+message RegisterUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message RegisterUserResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+message LoginUserRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginUserResponse {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+
+message GetUserClaimsResponse {
+    bool is_valid = 1;
+    bool is_authenticaed = 2;
+    string user_id = 3;
+    int32 role = 4;
+}
+
+message GetUserInfoRequest {
+    string user_uid = 1;
+}
+
+message GetUserInfoResonse {
+    string user_id = 1;
+    string email_address = 2;
+    string avatar_source = 3;
+    int32 native_language = 4;
+    int32 reference_language = 5;
+    int32 target_language = 6;
+    optional string first_name = 7;
+    optional string last_name = 8;
+    optional string extra_name = 9;
+    optional string display_name = 10;
+    int32 role = 11;
+    bool verified = 12;
+}
+
+message RequestToken {
+    string access_token = 1;
+}
+
+message ConfirmPasswordResetRequest {
+    string token = 1;
+    string new_password = 2;
+}
+
+message GetEnumDefinitionsRequest{}
+message GetEnumDefinitionsResponse{}
+
+
+
+
+

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package paideia;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/paideia;paideia";
+
+service FlashcardService {
+    rpc
+}
