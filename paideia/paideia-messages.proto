@@ -1,0 +1,223 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "shared/language-types.proto";
+
+package paideia;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/paideia;paideia";
+
+//*ENUMS
+
+// A field a card side can show. Dictionary fields are filled from Lexora;
+// the lemma is used when a study item does not pin a word form.
+enum CardField {
+    CARD_FIELD_UNSPECIFIED = 0;
+    CARD_FIELD_PICTURE = 1;
+    CARD_FIELD_TARGET_LEMMA = 2;
+    CARD_FIELD_TARGET_WORD = 3;
+    CARD_FIELD_TARGET_SOUND = 4;
+    CARD_FIELD_TARGET_IPA = 5;
+    CARD_FIELD_REFERENCE_LEMMA = 6;
+    CARD_FIELD_REFERENCE_WORD = 7;
+    CARD_FIELD_REFERENCE_SOUND = 8;
+    CARD_FIELD_REFERENCE_IPA = 9;
+    CARD_FIELD_GRAMMAR_LABEL = 10;
+}
+
+enum AnswerMode {
+    ANSWER_MODE_UNSPECIFIED = 0;
+    ANSWER_MODE_REVEAL = 1;     // reveal the back and grade yourself
+    ANSWER_MODE_TYPED = 2;      // type the back's first field, checked by the answer checker
+}
+
+// Learner-facing memory level, derived from FSRS stability.
+enum CardLevel {
+    CARD_LEVEL_UNSPECIFIED = 0;
+    CARD_LEVEL_NEW = 1;         // never reviewed
+    CARD_LEVEL_LEARNING = 2;    // stability under 1 day
+    CARD_LEVEL_FAMILIAR = 3;    // stability 1 to 21 days
+    CARD_LEVEL_MASTERED = 4;    // stability 21 days or more
+}
+
+enum Grade {
+    GRADE_UNSPECIFIED = 0;
+    GRADE_AGAIN = 1;
+    GRADE_HARD = 2;
+    GRADE_GOOD = 3;
+    GRADE_EASY = 4;
+}
+
+enum Verdict {
+    VERDICT_UNSPECIFIED = 0;
+    VERDICT_CORRECT = 1;
+    VERDICT_ALMOST = 2;
+    VERDICT_WRONG = 3;
+}
+
+enum CourseStatus {
+    COURSE_STATUS_UNSPECIFIED = 0;
+    COURSE_STATUS_DRAFT = 1;
+    COURSE_STATUS_PUBLISHED = 2;
+    COURSE_STATUS_ARCHIVED = 3;
+}
+
+enum StepKind {
+    STEP_KIND_UNSPECIFIED = 0;
+    STEP_KIND_CARDS = 1;
+    STEP_KIND_THEORY = 2;
+}
+
+//*CARD TYPES AND CARDS
+
+message CardType {
+    string uid = 1;
+    string owner_user_uid = 2;          // empty for built-in card types
+    string name = 3;
+    repeated CardField front_fields = 4;
+    repeated CardField back_fields = 5;
+    AnswerMode answer_mode = 6;
+    bool built_in = 7;
+}
+
+message StudyItem {
+    string uid = 1;
+    string user_uid = 2;
+    string referent_uid = 3;
+    lexora.Language target_language = 4;
+    lexora.Language reference_language = 5;
+    string target_symbol_uid = 6;
+    string target_word_uid = 7;         // empty = use the lemma
+    string reference_symbol_uid = 8;
+    string reference_word_uid = 9;      // empty = use the lemma
+    google.protobuf.Timestamp created_at = 10;
+}
+
+message Card {
+    string uid = 1;
+    string study_item_uid = 2;
+    string card_type_uid = 3;
+    CardLevel level = 4;
+    google.protobuf.Timestamp due_at = 5;
+    double stability = 6;
+    double difficulty = 7;
+    int32 reps = 8;
+    int32 lapses = 9;
+    bool enabled = 10;
+    google.protobuf.Timestamp last_reviewed_at = 11;
+    string source_step_uid = 12;
+}
+
+// The resolved content of one field on a card side.
+message FieldValue {
+    CardField field = 1;
+    string text = 2;            // lemma, word, IPA or grammar label
+    string media_source = 3;    // picture or sound location
+}
+
+// A card ready to be shown: its type plus both sides filled from the dictionary.
+message ReviewCard {
+    Card card = 1;
+    CardType card_type = 2;
+    repeated FieldValue front = 3;
+    repeated FieldValue back = 4;
+}
+
+message CheckResult {
+    Verdict verdict = 1;
+    double score = 2;
+    Grade suggested_grade = 3;
+    repeated string feedback = 4;
+    string normalized_answer = 5;
+}
+
+message LearnerSettings {
+    string user_uid = 1;
+    int32 daily_new_cards = 2;
+    int32 daily_review_limit = 3;
+    repeated string default_card_type_uids = 4;
+    double desired_retention = 5;
+}
+
+message LevelCounts {
+    int32 new = 1;
+    int32 learning = 2;
+    int32 familiar = 3;
+    int32 mastered = 4;
+}
+
+message CardTypeProgress {
+    string card_type_uid = 1;
+    string card_type_name = 2;
+    LevelCounts levels = 3;
+    int32 reviews_last_30_days = 4;
+    double pass_rate_last_30_days = 5;  // share of reviews graded Hard or better
+}
+
+message Progress {
+    LevelCounts levels = 1;
+    repeated CardTypeProgress card_types = 2;
+    int32 study_items = 3;
+    int32 study_items_mastered = 4;     // at least one mastered card
+    int32 reviews_today = 5;
+    int32 streak_days = 6;
+}
+
+//*COURSES
+
+message StepCard {
+    int32 position = 1;
+    string referent_uid = 2;
+    string target_symbol_uid = 3;
+    string target_word_uid = 4;
+    string card_type_uid = 5;
+}
+
+message TheoryPage {
+    lexora.Language reference_language = 1;
+    string title = 2;
+    string body_markdown = 3;
+}
+
+message CourseStep {
+    string uid = 1;
+    string course_uid = 2;
+    int32 position = 3;
+    StepKind kind = 4;
+    string title = 5;
+    string theory_step_uid = 6;         // card steps: the theory step they practise
+    repeated StepCard cards = 7;
+    repeated TheoryPage theory_pages = 8;
+}
+
+message Course {
+    string uid = 1;
+    string title = 2;
+    string description = 3;
+    lexora.Language target_language = 4;
+    string level = 5;
+    string image_source = 6;
+    CourseStatus status = 7;
+    string created_by = 8;
+    google.protobuf.Timestamp published_at = 9;
+    repeated CourseStep steps = 10;
+}
+
+message EnrolmentStep {
+    string step_uid = 1;
+    google.protobuf.Timestamp unlocked_at = 2;
+    google.protobuf.Timestamp read_at = 3;
+    google.protobuf.Timestamp completed_at = 4;
+    int32 cards_total = 5;
+    int32 cards_reviewed = 6;
+}
+
+message Enrolment {
+    string uid = 1;
+    string user_uid = 2;
+    string course_uid = 3;
+    lexora.Language reference_language = 4;
+    google.protobuf.Timestamp completed_at = 5;
+    repeated EnrolmentStep steps = 6;
+    LevelCounts card_levels = 7;
+}

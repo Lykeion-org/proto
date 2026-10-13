@@ -1,0 +1,212 @@
+syntax = "proto3";
+
+import "shared/language-types.proto";
+import "paideia/paideia-messages.proto";
+
+package paideia;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/paideia;paideia";
+
+// Every request carries the caller (user_uid, and role where it gates access).
+// Kosmos fills both from the verified token claims. Roles: 1 learner, 2 premium, 3 editor.
+service PaideiaService {
+//*card types
+    rpc ListCardTypes(ListCardTypesRequest) returns (ListCardTypesResponse);
+    rpc CreateCardType(CreateCardTypeRequest) returns (CardType);            // premium
+
+//*study items and cards
+    rpc AddStudyItem(AddStudyItemRequest) returns (AddStudyItemResponse);
+    rpc ListStudyItems(ListStudyItemsRequest) returns (ListStudyItemsResponse);
+    rpc DeleteStudyItem(DeleteStudyItemRequest) returns (DeleteStudyItemResponse);
+    rpc SetCardEnabled(SetCardEnabledRequest) returns (Card);
+
+//*reviewing
+    rpc GetReviewSession(GetReviewSessionRequest) returns (GetReviewSessionResponse);
+    rpc SubmitReview(SubmitReviewRequest) returns (SubmitReviewResponse);
+
+//*settings and progress
+    rpc GetLearnerSettings(GetLearnerSettingsRequest) returns (LearnerSettings);
+    rpc UpdateLearnerSettings(LearnerSettings) returns (LearnerSettings);
+    rpc GetProgress(GetProgressRequest) returns (Progress);
+
+//*courses (editing needs the editor role)
+    rpc CreateCourse(CreateCourseRequest) returns (Course);
+    rpc UpdateCourse(UpdateCourseRequest) returns (Course);
+    rpc GetCourse(GetCourseRequest) returns (Course);
+    rpc ListCourses(ListCoursesRequest) returns (ListCoursesResponse);
+    rpc AddCourseStep(AddCourseStepRequest) returns (CourseStep);
+    rpc UpdateCourseStep(UpdateCourseStepRequest) returns (CourseStep);
+    rpc DeleteCourseStep(DeleteCourseStepRequest) returns (DeleteCourseStepResponse);
+
+//*enrolment
+    rpc EnrolInCourse(EnrolInCourseRequest) returns (Enrolment);
+    rpc GetEnrolment(GetEnrolmentRequest) returns (Enrolment);
+    rpc MarkTheoryRead(MarkTheoryReadRequest) returns (Enrolment);
+}
+
+message ListCardTypesRequest {
+    string user_uid = 1;
+}
+message ListCardTypesResponse {
+    repeated CardType card_types = 1;
+}
+
+message CreateCardTypeRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string name = 3;
+    repeated CardField front_fields = 4;
+    repeated CardField back_fields = 5;
+    AnswerMode answer_mode = 6;
+}
+
+message AddStudyItemRequest {
+    string user_uid = 1;
+    string referent_uid = 2;
+    lexora.Language target_language = 3;
+    lexora.Language reference_language = 4;
+    string target_word_uid = 5;             // optional pinned form
+    string reference_word_uid = 6;          // optional pinned form
+    repeated string card_type_uids = 7;     // empty = the learner's default card types
+}
+message AddStudyItemResponse {
+    StudyItem study_item = 1;
+    repeated Card cards = 2;
+    repeated string skipped_card_type_uids = 3; // the word lacks a front field (no picture, no sound)
+}
+
+message ListStudyItemsRequest {
+    string user_uid = 1;
+    lexora.Language target_language = 2;    // unspecified = all
+    int32 limit = 3;
+    int32 offset = 4;
+}
+message ListStudyItemsResponse {
+    repeated StudyItem study_items = 1;
+    int64 total = 2;
+}
+
+message DeleteStudyItemRequest {
+    string user_uid = 1;
+    string study_item_uid = 2;
+}
+message DeleteStudyItemResponse {}
+
+message SetCardEnabledRequest {
+    string user_uid = 1;
+    string card_uid = 2;
+    bool enabled = 3;
+}
+
+message GetReviewSessionRequest {
+    string user_uid = 1;
+    lexora.Language target_language = 2;    // unspecified = all
+    int32 limit = 3;                        // default 20
+}
+message GetReviewSessionResponse {
+    repeated ReviewCard cards = 1;
+    int32 due_remaining = 2;
+    int32 new_remaining_today = 3;
+}
+
+message SubmitReviewRequest {
+    string user_uid = 1;
+    string card_uid = 2;
+    Grade grade = 3;                // required for reveal cards; overrides the suggested grade for typed cards
+    string typed_answer = 4;        // typed cards
+    int64 duration_ms = 5;
+}
+message SubmitReviewResponse {
+    Card card = 1;
+    Grade grade = 2;                // the grade that was applied
+    CheckResult check = 3;          // typed cards only
+    repeated FieldValue expected = 4;
+}
+
+message GetLearnerSettingsRequest {
+    string user_uid = 1;
+}
+
+message GetProgressRequest {
+    string user_uid = 1;
+    lexora.Language target_language = 2;    // unspecified = all
+}
+
+message CreateCourseRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string title = 3;
+    string description = 4;
+    lexora.Language target_language = 5;
+    string level = 6;
+    string image_source = 7;
+}
+message UpdateCourseRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string course_uid = 3;
+    string title = 4;
+    string description = 5;
+    string level = 6;
+    string image_source = 7;
+    CourseStatus status = 8;                // unspecified = unchanged
+}
+message GetCourseRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string course_uid = 3;
+}
+message ListCoursesRequest {
+    string user_uid = 1;
+    int32 role = 2;                         // editors also see drafts and archived courses
+    lexora.Language target_language = 3;    // unspecified = all
+    int32 limit = 4;
+    int32 offset = 5;
+}
+message ListCoursesResponse {
+    repeated Course courses = 1;            // without steps
+    int64 total = 2;
+}
+
+message AddCourseStepRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string course_uid = 3;
+    int32 position = 4;                     // 0 = append
+    StepKind kind = 5;
+    string title = 6;
+    string theory_step_uid = 7;
+    repeated StepCard cards = 8;
+    repeated TheoryPage theory_pages = 9;
+}
+// Replaces the step's title, cards and theory pages.
+message UpdateCourseStepRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string step_uid = 3;
+    string title = 4;
+    string theory_step_uid = 5;
+    repeated StepCard cards = 6;
+    repeated TheoryPage theory_pages = 7;
+}
+message DeleteCourseStepRequest {
+    string user_uid = 1;
+    int32 role = 2;
+    string step_uid = 3;
+}
+message DeleteCourseStepResponse {}
+
+message EnrolInCourseRequest {
+    string user_uid = 1;
+    string course_uid = 2;
+    lexora.Language reference_language = 3;
+}
+message GetEnrolmentRequest {
+    string user_uid = 1;
+    string course_uid = 2;
+}
+message MarkTheoryReadRequest {
+    string user_uid = 1;
+    string course_uid = 2;
+    string step_uid = 3;
+}
