@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+import "shared/language-types.proto";
+
+package krites;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/krites;krites";
+
+// How the learner gave the answer. Only typed answers are checked for now.
+enum AnswerMode {
+    ANSWER_MODE_UNSPECIFIED = 0;
+    ANSWER_MODE_TYPED = 1;
+}
+
+enum Verdict {
+    VERDICT_UNSPECIFIED = 0;
+    VERDICT_CORRECT = 1;
+    VERDICT_ALMOST = 2;
+    VERDICT_WRONG = 3;
+}
+
+// Suggested FSRS grade; Paideia makes the final call.
+enum Grade {
+    GRADE_UNSPECIFIED = 0;
+    GRADE_AGAIN = 1;
+    GRADE_HARD = 2;
+    GRADE_GOOD = 3;
+    GRADE_EASY = 4;
+}
+
+enum FeedbackKind {
+    FEEDBACK_KIND_UNSPECIFIED = 0;
+    FEEDBACK_KIND_EMPTY_ANSWER = 1;
+    FEEDBACK_KIND_EXPECTED = 2;
+    FEEDBACK_KIND_ALTERNATIVE = 3;
+    FEEDBACK_KIND_MISSING_ACCENT = 4;
+    FEEDBACK_KIND_TYPO = 5;
+    FEEDBACK_KIND_CASE = 6;
+    FEEDBACK_KIND_WRONG_FORM = 7;
+    FEEDBACK_KIND_MISSING_ARTICLE = 8;
+}
+
+// Strictness settings, taken from a checker profile (card type default or learner override).
+// The zero value is the strict check: no missing accents, no typos, no synonyms.
+message CheckSettings {
+    bool accept_missing_accents = 1;
+    int32 max_typos = 2;
+    bool case_sensitive = 3;
+    bool accept_synonyms = 4;
+    bool require_article = 5;
+}
+
+// Dictionary context of the expected answer, used for grammar diagnosis.
+message AnswerContext {
+    string referent_uid = 1;
+    string symbol_uid = 2;
+    lexora.Word expected_word = 3;
+    // Other forms of the same symbol, so a wrong form can be named ("that is the past, not the future").
+    repeated lexora.Word other_forms = 4;
+}
+
+message CheckAnswerRequest {
+    string given_answer = 1;
+    string expected_answer = 2;
+    // Other accepted answers, such as synonyms from the same Referent.
+    repeated string accepted_alternatives = 3;
+    lexora.Language language = 4;
+    AnswerMode mode = 5;
+    AnswerContext context = 6;
+    CheckSettings settings = 7;
+}
+
+message Feedback {
+    FeedbackKind kind = 1;
+    string message = 2;
+}
+
+message CheckAnswerResponse {
+    Verdict verdict = 1;
+    // 0.0 (wrong) to 1.0 (exactly right).
+    float score = 2;
+    Grade suggested_grade = 3;
+    repeated Feedback feedback = 4;
+    // The learner's answer after normalisation, for display.
+    string normalized_answer = 5;
+    // The expected answer or alternative the answer was matched against; empty when nothing matched.
+    string matched_answer = 6;
+}
+
+// A drill round checks several answers at once; results keep the request order.
+message CheckAnswersRequest {
+    repeated CheckAnswerRequest answers = 1;
+}
+
+message CheckAnswersResponse {
+    repeated CheckAnswerResponse results = 1;
+}
