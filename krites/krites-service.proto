@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+import "krites/krites-messages.proto";
+
+package krites;
+
+option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/krites;krites";
+
+// Krites judges learner answers. It is stateless and keeps no learner data.
+service KritesService {
+    rpc CheckAnswer(CheckAnswerRequest) returns (CheckAnswerResponse);
+    rpc CheckAnswers(CheckAnswersRequest) returns (CheckAnswersResponse);
+}
