@@ -172,17 +172,30 @@ message ListAllLinkedSymbolsResponse{
     int32 total_count = 2;
 }
 
+// A word found by the text analyser that is not in the dictionary yet.
 message WordSuggestion {
-    
+    string uid = 1;
+    string word = 2;           // the form as it appeared in the text
+    string lemma = 3;
+    Language language = 4;
+    SymbolType symbol_type = 5;
+    WordType word_type = 6;
+    WordAttributes attributes = 7;
+    string job_uid = 8;
+    string requester_uid = 9;
+    bool approved = 10;
+    string approved_by = 11;
 }
 message CreateWordSuggestionRequest {
-    
+    WordSuggestion suggestion = 1;
 }
 message ListAllWordSuggestionRequest {
-    
+    int32 page = 1;
+    int32 page_size = 2;
 }
 message ListAllWordSuggestionResponse {
-    
+    repeated WordSuggestion suggestions = 1;
+    int32 total_count = 2;
 }
 message UpdateWordSuggestionRequest {
     

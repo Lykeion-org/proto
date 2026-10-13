@@ -6,9 +6,12 @@ package lexora;
 
 option go_package = "github.com/Lykeion-org/go-shared/pkg/grpc/generated/lexora;lexora";
 
+// Queues a text for the NLP worker. Words it finds that are not in the
+// dictionary yet become word suggestions.
 message AnalyzeTextAndAddToSuggestionsRequest {
-    string test = 1;
-    string uid = 2;
+    string text = 1;
+    string requester_uid = 2;  // filled in by the gateway from the caller's token
+    Language language = 3;     // only LANGUAGE_EN is analysed for now; unspecified means EN
 }
 
 message AnalyzeTextAndAddToSuggestionsResponse {

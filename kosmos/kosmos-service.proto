@@ -2,6 +2,7 @@ syntax="proto3";
 
 import "shared/language-types.proto";
 import "lexora/dictionary-messages.proto";
+import "lexora/analysis-messages.proto";
 
 package kosmos;
 
@@ -54,6 +55,10 @@ service KosmosService {
     rpc UnlinkWordFromSymbol(lexora.UnlinkWordFromSymbolRequest) returns (lexora.UnlinkWordFromSymbolResponse);
     rpc ListAllLinkedReferents(lexora.ListAllLinkedReferentsRequest) returns (lexora.ListAllLinkedReferentsResponse);
     rpc ListAllLinkedSymbols(lexora.ListAllLinkedSymbolsRequest) returns (lexora.ListAllLinkedSymbolsResponse);
+
+    //text analysis
+    rpc AnalyzeTextAndAddToSuggestions(lexora.AnalyzeTextAndAddToSuggestionsRequest) returns (lexora.AnalyzeTextAndAddToSuggestionsResponse);
+    rpc ListAllWordSuggestion(lexora.ListAllWordSuggestionRequest) returns (lexora.ListAllWordSuggestionResponse);
 
 
     //learning interactions
